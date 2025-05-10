@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>ru.practicum</groupId>
+        <artifactId>intershop</artifactId>
+        <version>1.0.0</version>
+    </parent>
+
+    <artifactId>intershop-frontend</artifactId>
+    <version>1.0.0</version>
+
+    <build>
+        <resources>
+            <resource>
+                <directory>dist</directory>
+                <targetPath>${basedir}/target/classes/META-INF/resources/</targetPath>
+            </resource>
+        </resources>
+        <plugins>
+            <plugin>
+                <groupId>com.github.eirslett</groupId>
+                <artifactId>frontend-maven-plugin</artifactId>
+                <version>1.6</version>
+                <configuration>
+                    <nodeVersion>v14.17.0</nodeVersion>
+                    <yarnVersion>v1.22.10</yarnVersion>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>install node and yarn</id>
+                        <goals>
+                            <goal>install-node-and-yarn</goal>
+                        </goals>
+                        <phase>generate-resources</phase>
+                    </execution>
+                    <execution>
+                        <id>yarn install</id>
+                        <goals>
+                            <goal>yarn</goal>
+                        </goals>
+                        <configuration>
+                            <arguments>install --registry https://registry.npmjs.org</arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>yarn build</id>
+                        <goals>
+                            <goal>yarn</goal>
+                        </goals>
+                        <phase>generate-resources</phase>
+                        <configuration>
+                            <arguments>${frontend.build}</arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
