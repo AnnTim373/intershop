@@ -8,6 +8,6 @@ FROM openjdk:21
 
 WORKDIR /intershop
 
-COPY --from=build /intershop/target/*.jar ./intershop.jar
+COPY --from=build /intershop/backend/target/*.jar ./intershop.jar
 
 CMD ["java", "-jar", "/intershop/intershop.jar"]
