@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+
+    <changeSet id="1" author="Anna Timofeeva">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <sequenceExists schemaName="shop" sequenceName="seq_order_content"/>
+            </not>
+        </preConditions>
+
+        <createSequence schemaName="shop" sequenceName="seq_order_content"/>
+    </changeSet>
+
+    <changeSet id="2" author="Anna Timofeeva">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists schemaName="shop" tableName="order_content"/>
+            </not>
+        </preConditions>
+
+        <createTable schemaName="shop" tableName="order_content" remarks="Содержимое заказа">
+            <column name="id" type="bigint" remarks="Идентификатор записи">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="product_id" type="bigint" remarks="Идентификатор товара">
+                <constraints nullable="false"/>
+            </column>
+            <column name="order_id" type="bigint" remarks="Идентификатор заказа">
+                <constraints nullable="false"/>
+            </column>
+            <column name="quantity" type="int" remarks="Количество единиц товара">
+                <constraints nullable="false"/>
+            </column>
+            <column name="product_price_from_order" type="numeric" remarks="Цена товара на момент заказа">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint baseTableSchemaName="shop"
+                                 baseTableName="order_content"
+                                 baseColumnNames="product_id"
+                                 constraintName="fk_product_order_content"
+                                 referencedTableSchemaName="shop"
+                                 referencedTableName="product"
+                                 referencedColumnNames="id"/>
+        <addForeignKeyConstraint baseTableSchemaName="shop"
+                                 baseTableName="order_content"
+                                 baseColumnNames="order_id"
+                                 constraintName="fk_order_order_content"
+                                 referencedTableSchemaName="shop"
+                                 referencedTableName="order"
+                                 referencedColumnNames="id"/>
+    </changeSet>
+
+</databaseChangeLog>

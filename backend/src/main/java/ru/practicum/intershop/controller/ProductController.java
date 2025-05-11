@@ -16,7 +16,7 @@ import ru.practicum.intershop.validation.ProductValidator;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/products")
 @RequiredArgsConstructor
 public class ProductController {
 
@@ -24,7 +24,7 @@ public class ProductController {
 
     private final ProductValidator productValidator;
 
-    @GetMapping("/products")
+    @GetMapping
     public ResponseEntity<List<ProductOutputDTO>> getProducts(Pageable pageable,
                                                               @RequestParam(name = "search", required = false)
                                                               String search) {
@@ -33,7 +33,7 @@ public class ProductController {
         return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
     }
 
-    @PostMapping("/products")
+    @PostMapping
     public ResponseEntity<ProductOutputDTO> saveProduct(@ModelAttribute ProductInputDTO productInputDTO) {
         productValidator.validate(productInputDTO);
         return ResponseEntity.ok(productService.save(productInputDTO));

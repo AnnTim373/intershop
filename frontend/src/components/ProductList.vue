@@ -12,9 +12,17 @@
       {{ errorMessage }}
     </div>
 
-    <button class="add-product-btn" @click="openAddProductModal">
-      ➕ Добавить товар
-    </button>
+    <div class="top-actions">
+      <button class="add-product-btn" @click="openAddProductModal">
+        ➕ Добавить товар
+      </button>
+
+      <div class="cart-wrapper">
+        <button class="cart-btn" @click="openCartModal">
+          🛒 Корзина ({{ cartItemCount }})
+        </button>
+      </div>
+    </div>
 
     <div class="controls">
       <label>
@@ -55,9 +63,9 @@
                  width="48" height="48" viewBox="0 0 24 24"
                  fill="none" stroke="#888" stroke-width="2"
                  stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-              <circle cx="8.5" cy="8.5" r="1.5" />
-              <path d="M21 15l-5-5L5 21" />
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+              <circle cx="8.5" cy="8.5" r="1.5"/>
+              <path d="M21 15l-5-5L5 21"/>
             </svg>
           </div>
         </div>
@@ -125,10 +133,33 @@
       <input v-model="newProduct.name" type="text" placeholder="Название товара"/>
       <input v-model="newProduct.price" type="number" step="0.01" placeholder="Цена"/>
       <textarea v-model="newProduct.description" placeholder="Описание"></textarea>
-      <input type="file" @change="handleImageUpload" />
+      <input type="file" @change="handleImageUpload"/>
 
       <button @click="submitNewProduct" class="add-btn">Сохранить</button>
       <button @click="closeAddProductModal" class="close-btn">Отмена</button>
+    </div>
+  </div>
+  <div v-if="showCartModal" class="modal-overlay" @click.self="closeCartModal">
+    <div class="modal">
+      <h2>Корзина</h2>
+
+      <div v-if="cartItems.length === 0">
+        <p>Корзина пуста</p>
+      </div>
+
+      <div v-else>
+        <ul class="cart-items">
+          <li v-for="item in cartItems" :key="item.id">
+            {{ item.name }} — {{ item.price }} ₽ × {{ item.quantity }} = {{ item.price * item.quantity }} ₽
+          </li>
+        </ul>
+
+        <p><strong>Итого: {{ totalPrice }} ₽</strong></p>
+
+        <button class="checkout-btn" @click="checkout">Оформить заказ</button>
+      </div>
+
+      <button class="close-btn" @click="closeCartModal">Закрыть</button>
     </div>
   </div>
 </template>
@@ -164,6 +195,51 @@ const newProduct = reactive({
   description: '',
   image: null
 })
+
+const showCartModal = ref(false)
+
+function openCartModal() {
+  showCartModal.value = true
+}
+
+function closeCartModal() {
+  showCartModal.value = false
+}
+
+const cartItems = computed(() => {
+  return Object.entries(cart).map(([id, quantity]) => {
+    const product = products.value.find(p => p.id == id)
+    return product ? { ...product, quantity } : null
+  }).filter(Boolean)
+})
+
+const totalPrice = computed(() => {
+  return cartItems.value.reduce((sum, item) => sum + item.price * item.quantity, 0)
+})
+
+const cartItemCount = computed(() => {
+  return Object.values(cart).reduce((sum, count) => sum + count, 0)
+})
+
+async function checkout() {
+  try {
+    const orderItems = cartItems.value.map(item => ({
+      productId: item.id,
+      quantity: item.quantity
+    }))
+
+    await axios.post('/api/orders', {
+      items: orderItems
+    })
+
+    showCartModal.value = false
+    for (const id in cart) delete cart[id]
+    showErrorPopup('Заказ успешно оформлен!')
+  } catch (error) {
+    showErrorPopup('Ошибка при оформлении заказа.')
+    console.error('Ошибка оформления заказа:', error)
+  }
+}
 
 function openAddProductModal() {
   showAddModal.value = true
@@ -475,6 +551,43 @@ fetchProducts()
   border: 1px solid #ccc;
   border-radius: 4px;
   box-sizing: border-box;
+}
+
+.cart-items {
+  text-align: left;
+  margin-bottom: 12px;
+}
+
+.checkout-btn {
+  background-color: #388e3c;
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 12px;
+}
+
+.top-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.add-product-btn,
+.cart-btn {
+  background-color: #1976d2;
+  color: white;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.cart-wrapper {
+  margin-left: auto;
 }
 
 @keyframes fadein {
