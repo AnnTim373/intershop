@@ -32,7 +32,8 @@
             <column name="price" type="numeric" remarks="Стоимость товара">
                 <constraints nullable="false"/>
             </column>
-            <column name="image" type="blob" remarks="Изображение товара"/>
+            <column name="image" type="bytea" remarks="Изображение товара"/>
         </createTable>
     </changeSet>
+
 </databaseChangeLog>

@@ -8,16 +8,37 @@
         class="search-input"
     />
 
+    <div v-if="showError" class="error-popup">
+      {{ errorMessage }}
+    </div>
+
+    <button class="add-product-btn" @click="openAddProductModal">
+      ➕ Добавить товар
+    </button>
+
     <div class="product-list">
       <div v-for="product in products"
            :key="product.id"
            class="product-card"
            @click="openProductModal(product)">
-        <img v-if="product.image"
-             :src="`data:image/jpeg;base64,${product.image}`"
-             alt="product.name"
-             class="product-image"
-        />
+        <div class="product-image-container">
+          <img v-if="product.image"
+               :src="`data:image/jpeg;base64,${product.image}`"
+               alt="product.name"
+               class="product-image"
+          />
+          <div v-else class="placeholder-image">
+            <svg xmlns="http://www.w3.org/2000/svg"
+                 width="48" height="48" viewBox="0 0 24 24"
+                 fill="none" stroke="#888" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+              <circle cx="8.5" cy="8.5" r="1.5" />
+              <path d="M21 15l-5-5L5 21" />
+            </svg>
+          </div>
+        </div>
+
         <h3>{{ product.name }}</h3>
         <p class="price">{{ product.price }} ₽</p>
 
@@ -74,6 +95,19 @@
       <button @click="closeModal" class="close-btn">Закрыть</button>
     </div>
   </div>
+  <div v-if="showAddModal" class="modal-overlay" @click.self="closeAddProductModal">
+    <div class="modal">
+      <h2>Добавление товара</h2>
+
+      <input v-model="newProduct.name" type="text" placeholder="Название товара"/>
+      <input v-model="newProduct.price" type="number" step="0.01" placeholder="Цена"/>
+      <textarea v-model="newProduct.description" placeholder="Описание"></textarea>
+      <input type="file" @change="handleImageUpload" />
+
+      <button @click="submitNewProduct" class="add-btn">Сохранить</button>
+      <button @click="closeAddProductModal" class="close-btn">Отмена</button>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -91,9 +125,59 @@ const limit = 6
 const selectedProduct = ref(null)
 const showModal = ref(false)
 
+const errorMessage = ref('')
+const showError = ref(false)
+
 const totalPages = computed(() =>
     Math.ceil(total.value / limit)
 )
+
+const showAddModal = ref(false)
+
+const newProduct = reactive({
+  name: '',
+  price: '',
+  description: '',
+  image: null
+})
+
+function openAddProductModal() {
+  showAddModal.value = true
+}
+
+function closeAddProductModal() {
+  showAddModal.value = false
+  Object.assign(newProduct, {
+    name: '',
+    price: '',
+    description: '',
+    image: null
+  })
+}
+
+async function submitNewProduct() {
+  try {
+    const formData = new FormData()
+    formData.append('name', newProduct.name)
+    formData.append('price', newProduct.price)
+    formData.append('description', newProduct.description)
+    if (newProduct.image) {
+      formData.append('image', newProduct.image)
+    }
+
+    await axios.post('/api/products', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+
+    closeAddProductModal()
+    fetchProducts() // обновим список
+  } catch (error) {
+    console.error('Ошибка при добавлении товара:', error)
+    showErrorPopup('Не удалось добавить товар. Проверьте данные.')
+  }
+}
 
 
 async function fetchProducts() {
@@ -109,8 +193,19 @@ async function fetchProducts() {
     products.value = response.data
     total.value = response.headers["x-total-count"]
   } catch (error) {
-    console.error('Ошибка при загрузке товаров:', error)
+    showErrorPopup(error.response.data.errorMessage)
+    console.error('Ошибка при загрузке товаров:', error.response.data.errorMessage)
   }
+}
+
+function showErrorPopup(message) {
+  errorMessage.value = message
+
+  showError.value = true
+
+  setTimeout(() => {
+    showError.value = false
+  }, 5000)
 }
 
 function openProductModal(product) {
@@ -121,6 +216,20 @@ function openProductModal(product) {
 function closeModal() {
   showModal.value = false
   selectedProduct.value = null
+}
+
+function handleImageUpload(event) {
+  const file = event.target.files[0]
+  const maxSize = 10 * 1024 * 1024
+
+  if (file && file.size > maxSize) {
+    showErrorPopup('Размер изображения не должен превышать 10 МБ.')
+    newProduct.image = null
+    event.target.value = ''
+    return
+  }
+
+  newProduct.image = file
 }
 
 
@@ -196,10 +305,30 @@ fetchProducts()
   text-align: center;
 }
 
+.product-image-container {
+  width: 100%;
+  height: 150px;
+  margin-bottom: 12px;
+  border-radius: 4px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f0f0f0;
+}
+
 .product-image {
   width: 100%;
-  height: auto;
-  margin-bottom: 12px;
+  height: 100%;
+  object-fit: cover;
+}
+
+.placeholder-image {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  background-color: #f0f0f0;
 }
 
 .price {
@@ -276,6 +405,61 @@ fetchProducts()
   padding: 8px 16px;
   cursor: pointer;
   border-radius: 4px;
+}
+
+.error-popup {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background-color: #f44336;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  animation: fadein 0.3s ease, fadeout 0.3s ease 2.7s;
+}
+
+.add-product-btn {
+  background-color: #1976d2;
+  color: white;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  cursor: pointer;
+}
+
+.modal input,
+.modal textarea {
+  width: 100%;
+  margin: 8px 0;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+@keyframes fadein {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeout {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
 }
 
 </style>

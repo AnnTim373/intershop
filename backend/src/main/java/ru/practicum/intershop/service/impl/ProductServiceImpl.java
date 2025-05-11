@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import ru.practicum.intershop.dto.ProductInputDTO;
 import ru.practicum.intershop.dto.ProductOutputDTO;
 import ru.practicum.intershop.mapper.ProductMapper;
 import ru.practicum.intershop.repository.ProductRepository;
@@ -22,6 +23,11 @@ public class ProductServiceImpl implements ProductService {
             return productRepository.findAll(pageable).map(productMapper::toDTO);
         }
         return productRepository.findAllBySearch(pageable, search).map(productMapper::toDTO);
+    }
+
+    @Override
+    public ProductOutputDTO save(ProductInputDTO productInputDTO) {
+        return productMapper.toDTO(productRepository.save(productMapper.fromDTO(productInputDTO)));
     }
 
 }

@@ -6,13 +6,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import ru.practicum.intershop.dto.ProductInputDTO;
 import ru.practicum.intershop.dto.ProductOutputDTO;
 import ru.practicum.intershop.service.ProductService;
 import ru.practicum.intershop.util.PaginationUtil;
+import ru.practicum.intershop.validation.ProductValidator;
 
 import java.util.List;
 
@@ -23,6 +22,8 @@ public class ProductController {
 
     private final ProductService productService;
 
+    private final ProductValidator productValidator;
+
     @GetMapping("/products")
     public ResponseEntity<List<ProductOutputDTO>> getProducts(Pageable pageable,
                                                               @RequestParam(name = "search", required = false)
@@ -30,6 +31,12 @@ public class ProductController {
         Page<ProductOutputDTO> page = productService.findAll(pageable, search);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page);
         return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
+    }
+
+    @PostMapping("/products")
+    public ResponseEntity<ProductOutputDTO> saveProduct(@ModelAttribute ProductInputDTO productInputDTO) {
+        productValidator.validate(productInputDTO);
+        return ResponseEntity.ok(productService.save(productInputDTO));
     }
 
 }
