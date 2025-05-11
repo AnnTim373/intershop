@@ -9,7 +9,10 @@
     />
 
     <div class="product-list">
-      <div v-for="product in products" :key="product.id" class="product-card">
+      <div v-for="product in products"
+           :key="product.id"
+           class="product-card"
+           @click="openProductModal(product)">
         <img v-if="product.image"
              :src="`data:image/jpeg;base64,${product.image}`"
              alt="product.name"
@@ -20,16 +23,16 @@
 
         <div v-if="cart[product.id]">
           <div class="quantity-control">
-            <button @click="decreaseQuantity(product.id)">-</button>
+            <button @click.stop="decreaseQuantity(product.id)">-</button>
             <span>{{ cart[product.id] }}</span>
-            <button @click="increaseQuantity(product.id)">+</button>
+            <button @click.stop="increaseQuantity(product.id)">+</button>
           </div>
-          <button class="remove-btn" @click="removeFromCart(product.id)">
+          <button class="remove-btn" @click.stop="removeFromCart(product.id)">
             Удалить из корзины
           </button>
         </div>
         <div v-else>
-          <button class="add-btn" @click="addToCart(product.id)">
+          <button class="add-btn" @click.stop="addToCart(product.id)">
             Добавить в корзину
           </button>
         </div>
@@ -40,6 +43,35 @@
       <button :disabled="page === 1" @click="prevPage">Назад</button>
       <span>Страница {{ totalPages === 0 ? 0 : page }} из {{ totalPages }}</span>
       <button :disabled="page === totalPages" @click="nextPage">Вперёд</button>
+    </div>
+  </div>
+
+  <div v-if="showModal" class="modal-overlay" @click.self="closeModal">
+    <div class="modal">
+      <h2>{{ selectedProduct.name }}</h2>
+      <img v-if="selectedProduct.image"
+           :src="`data:image/jpeg;base64,${selectedProduct.image}`"
+           alt="selectedProduct.name"
+           class="product-image"
+      />
+      <p><strong>Цена:</strong> {{ selectedProduct.price }} ₽</p>
+      <p><strong>Описание:</strong> {{ selectedProduct.description || 'Описание отсутствует.' }}</p>
+      <div v-if="cart[selectedProduct.id]">
+        <div class="quantity-control">
+          <button @click.stop="decreaseQuantity(selectedProduct.id)">-</button>
+          <span>{{ cart[selectedProduct.id] }}</span>
+          <button @click.stop="increaseQuantity(selectedProduct.id)">+</button>
+        </div>
+        <button class="remove-btn" @click.stop="removeFromCart(selectedProduct.id)">
+          Удалить из корзины
+        </button>
+      </div>
+      <div v-else>
+        <button class="add-btn" @click.stop="addToCart(selectedProduct.id)">
+          Добавить в корзину
+        </button>
+      </div>
+      <button @click="closeModal" class="close-btn">Закрыть</button>
     </div>
   </div>
 </template>
@@ -56,6 +88,8 @@ const searchQuery = ref(localStorage.getItem('searchQuery') || '')
 const products = ref([])
 const total = ref(0)
 const limit = 6
+const selectedProduct = ref(null)
+const showModal = ref(false)
 
 const totalPages = computed(() =>
     Math.ceil(total.value / limit)
@@ -77,6 +111,16 @@ async function fetchProducts() {
   } catch (error) {
     console.error('Ошибка при загрузке товаров:', error)
   }
+}
+
+function openProductModal(product) {
+  selectedProduct.value = product
+  showModal.value = true
+}
+
+function closeModal() {
+  showModal.value = false
+  selectedProduct.value = null
 }
 
 
@@ -201,4 +245,37 @@ fetchProducts()
   border: none;
   cursor: pointer;
 }
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.modal {
+  background: white;
+  padding: 24px;
+  border-radius: 8px;
+  max-width: 400px;
+  width: 100%;
+  text-align: center;
+}
+
+.close-btn {
+  margin-top: 16px;
+  background-color: #c62828;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
 </style>
