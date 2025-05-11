@@ -16,6 +16,29 @@
       ➕ Добавить товар
     </button>
 
+    <div class="controls">
+      <label>
+        Показывать по:
+        <select v-model="pageSize" @change="onPageSizeChange">
+          <option :value="10">10</option>
+          <option :value="20">20</option>
+          <option :value="50">50</option>
+          <option :value="100">100</option>
+        </select>
+      </label>
+
+      <label>
+        Сортировать по:
+        <select v-model="sortOption" @change="fetchProducts">
+          <option value="">Без сортировки</option>
+          <option value="name,asc">Название (А-Я)</option>
+          <option value="name,desc">Название (Я-А)</option>
+          <option value="price,asc">Цена ↑</option>
+          <option value="price,desc">Цена ↓</option>
+        </select>
+      </label>
+    </div>
+
     <div class="product-list">
       <div v-for="product in products"
            :key="product.id"
@@ -118,10 +141,11 @@ import debounce from 'lodash.debounce'
 const cart = reactive(JSON.parse(localStorage.getItem('cart') || '{}'))
 const page = ref(Number(localStorage.getItem('page')) || 1)
 const searchQuery = ref(localStorage.getItem('searchQuery') || '')
+const pageSize = ref(localStorage.getItem('pageSize') || 10)
+const sortOption = ref(localStorage.getItem('sortOption') || '')
 
 const products = ref([])
 const total = ref(0)
-const limit = 6
 const selectedProduct = ref(null)
 const showModal = ref(false)
 
@@ -129,7 +153,7 @@ const errorMessage = ref('')
 const showError = ref(false)
 
 const totalPages = computed(() =>
-    Math.ceil(total.value / limit)
+    Math.ceil(total.value / pageSize.value)
 )
 
 const showAddModal = ref(false)
@@ -184,17 +208,17 @@ async function fetchProducts() {
   try {
     const response = await axios.get('/api/products', {
       params: {
-        search: searchQuery.value == null || searchQuery.value === "" ? null : "%" + searchQuery.value + "%",
+        search: searchQuery.value ? `%${searchQuery.value}%` : null,
         page: page.value - 1,
-        size: limit
+        size: pageSize.value,
+        sort: sortOption.value
       }
     })
-    console.log(response)
     products.value = response.data
     total.value = response.headers["x-total-count"]
   } catch (error) {
-    showErrorPopup(error.response.data.errorMessage)
-    console.error('Ошибка при загрузке товаров:', error.response.data.errorMessage)
+    showErrorPopup(error.response?.data?.errorMessage || "Ошибка загрузки товаров")
+    console.error('Ошибка при загрузке товаров:', error)
   }
 }
 
@@ -252,6 +276,14 @@ watch(searchQuery, (newQuery) => {
   localStorage.setItem('searchQuery', newQuery)
 })
 
+watch(pageSize, (newPageSize) => {
+  localStorage.setItem('pageSize', newPageSize)
+})
+
+watch(sortOption, (newSortOption) => {
+  localStorage.setItem('sortOption', newSortOption)
+})
+
 
 function addToCart(id) {
   cart[id] = 1
@@ -276,6 +308,11 @@ function nextPage() {
 
 function prevPage() {
   if (page.value > 1) page.value--
+}
+
+function onPageSizeChange() {
+  page.value = 1
+  fetchProducts()
 }
 
 
