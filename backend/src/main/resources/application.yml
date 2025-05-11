@@ -1,9 +1,17 @@
 spring:
+  liquibase:
+    default-schema: shop
+    change-log: classpath:liquibase/liquibase.changelog-master.xml
   application.name: intershop
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
     url: jdbc:postgresql://localhost:54332/intershop
     username: postgres
     password: postgres
+  jpa:
+    properties.hibernate.generate_statistics: false
+    hibernate:
+      ddl-auto: none
 server:
   port: 8040
+
