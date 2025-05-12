@@ -16,12 +16,15 @@
       <button class="add-product-btn" @click="openAddProductModal">
         ➕ Добавить товар
       </button>
-
-      <div class="cart-wrapper">
+      <div class="order-cart-wrapper">
+        <button class="orders-btn" @click="openOrdersModal">
+          📦 Заказы
+        </button>
         <button class="cart-btn" @click="openCartModal">
           🛒 Корзина ({{ cartItemCount }})
         </button>
       </div>
+
     </div>
 
     <div class="controls">
@@ -151,6 +154,13 @@
         <ul class="cart-items">
           <li v-for="item in cartItems" :key="item.id">
             {{ item.name }} — {{ item.price }} ₽ × {{ item.quantity }} = {{ item.price * item.quantity }} ₽
+            <div class="quantity-control">
+              <button @click.stop="decreaseQuantity(item.id)">-</button>
+              <button @click.stop="increaseQuantity(item.id)">+</button>
+            </div>
+            <button class="remove-btn" @click.stop="removeFromCart(item.id)">
+              Удалить из корзины
+            </button>
           </li>
         </ul>
 
@@ -160,6 +170,36 @@
       </div>
 
       <button class="close-btn" @click="closeCartModal">Закрыть</button>
+    </div>
+  </div>
+  <div v-if="showOrdersModal" class="modal-overlay" @click.self="closeOrdersModal">
+    <div class="modal orders-modal">
+      <h2>Список заказов</h2>
+
+      <div v-if="orders.length === 0">Нет заказов</div>
+      <div v-else>
+        <div v-for="order in orders" :key="order.id" class="order-entry">
+          <div @click="openOrderDetailsModal(order)" class="order-summary">
+            🧾 Заказ #{{ order.id }} — {{ order.totalPrice }} ₽
+          </div>
+        </div>
+      </div>
+
+      <button @click="closeOrdersModal" class="close-btn">Закрыть</button>
+    </div>
+  </div>
+  <div v-if="showOrderDetailsModal" class="modal-overlay" @click.self="closeOrderDetailsModal">
+    <div class="modal order-detail-modal">
+      <h2>Заказ #{{ selectedOrder.id }}</h2>
+      <p><strong>Сумма:</strong> {{ selectedOrder.totalPrice }} ₽</p>
+
+      <ul>
+        <li v-for="item in selectedOrder.contents" :key="item.id">
+          {{ item.productName }} — {{ item.price }} ₽ × {{ item.quantity }} = {{ item.price * item.quantity }} ₽
+        </li>
+      </ul>
+
+      <button class="close-btn" @click="closeOrderDetailsModal">Закрыть</button>
     </div>
   </div>
 </template>
@@ -209,7 +249,7 @@ function closeCartModal() {
 const cartItems = computed(() => {
   return Object.entries(cart).map(([id, quantity]) => {
     const product = products.value.find(p => p.id == id)
-    return product ? { ...product, quantity } : null
+    return product ? {...product, quantity} : null
   }).filter(Boolean)
 })
 
@@ -228,11 +268,13 @@ async function checkout() {
       quantity: item.quantity
     }))
 
-    await axios.post('/api/orders', {
+    const response = await axios.post('/api/orders', {
       items: orderItems
     })
 
     showCartModal.value = false
+    selectedOrder.value = response.data
+    showOrderDetailsModal.value = true
     for (const id in cart) delete cart[id]
     showErrorPopup('Заказ успешно оформлен!')
   } catch (error) {
@@ -272,7 +314,7 @@ async function submitNewProduct() {
     })
 
     closeAddProductModal()
-    fetchProducts() // обновим список
+    fetchProducts()
   } catch (error) {
     console.error('Ошибка при добавлении товара:', error)
     showErrorPopup('Не удалось добавить товар. Проверьте данные.')
@@ -332,12 +374,47 @@ function handleImageUpload(event) {
   newProduct.image = file
 }
 
+const showOrdersModal = ref(false)
+const orders = ref([])
+const expandedOrderId = ref(null)
+
+function openOrdersModal() {
+  fetchOrders()
+  showOrdersModal.value = true
+}
+
+function closeOrdersModal() {
+  showOrdersModal.value = false
+  expandedOrderId.value = null
+}
+
+async function fetchOrders() {
+  try {
+    const response = await axios.get('/api/orders')
+    orders.value = response.data
+  } catch (error) {
+    console.error('Ошибка при получении заказов:', error)
+    showErrorPopup('Не удалось загрузить заказы.')
+  }
+}
 
 const onSearchInput = debounce(() => {
   page.value = 1
   fetchProducts()
 }, 500)
 
+const showOrderDetailsModal = ref(false)
+const selectedOrder = ref(null)
+
+function openOrderDetailsModal(order) {
+  selectedOrder.value = order
+  showOrderDetailsModal.value = true
+}
+
+function closeOrderDetailsModal() {
+  selectedOrder.value = null
+  showOrderDetailsModal.value = false
+}
 
 watch(cart, (newCart) => {
   localStorage.setItem('cart', JSON.stringify(newCart))
@@ -533,16 +610,6 @@ fetchProducts()
   animation: fadein 0.3s ease, fadeout 0.3s ease 2.7s;
 }
 
-.add-product-btn {
-  background-color: #1976d2;
-  color: white;
-  padding: 10px 16px;
-  border: none;
-  border-radius: 6px;
-  margin-bottom: 20px;
-  cursor: pointer;
-}
-
 .modal input,
 .modal textarea {
   width: 100%;
@@ -575,8 +642,10 @@ fetchProducts()
   margin-bottom: 20px;
 }
 
+.orders-btn,
 .add-product-btn,
 .cart-btn {
+  margin-left: 10px;
   background-color: #1976d2;
   color: white;
   padding: 10px 16px;
@@ -586,8 +655,33 @@ fetchProducts()
   font-size: 16px;
 }
 
-.cart-wrapper {
+.order-cart-wrapper {
   margin-left: auto;
+}
+
+.orders-modal {
+  max-height: 80vh;
+  overflow-y: auto;
+  text-align: left;
+}
+
+.order-entry {
+  border: 1px solid #ccc;
+  padding: 12px;
+  margin-bottom: 10px;
+  border-radius: 6px;
+  background: #f9f9f9;
+}
+
+.order-summary {
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.order-detail-modal {
+  max-height: 80vh;
+  overflow-y: auto;
+  text-align: left;
 }
 
 @keyframes fadein {

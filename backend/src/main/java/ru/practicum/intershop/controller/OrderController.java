@@ -1,13 +1,14 @@
 package ru.practicum.intershop.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 import ru.practicum.intershop.dto.OrderInputDTO;
+import ru.practicum.intershop.dto.OrderOutputDTO;
 import ru.practicum.intershop.service.OrderService;
 import ru.practicum.intershop.validation.OrderValidator;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -18,10 +19,16 @@ public class OrderController {
 
     private final OrderValidator orderValidator;
 
+    @GetMapping
+    public ResponseEntity<List<OrderOutputDTO>> getOrders() {
+        List<OrderOutputDTO> orderList = orderService.findAll();
+        return ResponseEntity.ok(orderList);
+    }
+
     @PostMapping
-    public void saveOrder(@RequestBody OrderInputDTO orderInputDTO) {
+    public OrderOutputDTO saveOrder(@RequestBody OrderInputDTO orderInputDTO) {
         orderValidator.validate(orderInputDTO);
-        orderService.createOrder(orderInputDTO);
+        return orderService.createOrder(orderInputDTO);
     }
 
 }

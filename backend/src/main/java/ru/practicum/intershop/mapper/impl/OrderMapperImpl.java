@@ -6,11 +6,13 @@ import ru.practicum.intershop.domain.Order;
 import ru.practicum.intershop.domain.OrderContent;
 import ru.practicum.intershop.domain.Product;
 import ru.practicum.intershop.dto.OrderInputDTO;
+import ru.practicum.intershop.dto.OrderOutputDTO;
 import ru.practicum.intershop.error.custom_exception.IntershopException;
 import ru.practicum.intershop.mapper.OrderMapper;
 import ru.practicum.intershop.service.ProductService;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -30,6 +32,37 @@ public class OrderMapperImpl implements OrderMapper {
                 .build();
         contentList.forEach(content -> content.setOrder(order));
         return order;
+    }
+
+    @Override
+    public List<OrderOutputDTO> toDTO(List<Order> orderList) {
+        if (orderList == null || orderList.isEmpty()) return new ArrayList<>();
+        return orderList.stream().map(this::toDTO).collect(Collectors.toList());
+    }
+
+    @Override
+    public OrderOutputDTO toDTO(Order order) {
+        return OrderOutputDTO.builder()
+                .id(order.getId())
+                .orderDate(order.getOrderDateTime())
+                .totalPrice(order.getTotalPrice())
+                .contents(getDTOFromOrderContent(order.getContents()))
+                .build();
+    }
+
+    private List<OrderOutputDTO.OrderContentOutputDTO> getDTOFromOrderContent(List<OrderContent> contents) {
+        if (contents == null || contents.isEmpty()) throw new IntershopException("Содержимое заказа не найдено");
+        return contents.stream().map(this::getOrderContentFromDTO).collect(Collectors.toList());
+    }
+
+    private OrderOutputDTO.OrderContentOutputDTO getOrderContentFromDTO(OrderContent content) {
+        if (content == null || content.getProduct() == null) throw new IntershopException("Товар из заказа не найден");
+
+        return OrderOutputDTO.OrderContentOutputDTO.builder()
+                .productName(content.getProduct().getName())
+                .price(content.getProduct().getPrice())
+                .quantity(content.getQuantity())
+                .build();
     }
 
     private List<OrderContent> getOrderContentFromDTO(List<OrderInputDTO.Item> items) {

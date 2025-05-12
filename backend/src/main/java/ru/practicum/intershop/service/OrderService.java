@@ -1,9 +1,14 @@
 package ru.practicum.intershop.service;
 
 import ru.practicum.intershop.dto.OrderInputDTO;
+import ru.practicum.intershop.dto.OrderOutputDTO;
+
+import java.util.List;
 
 public interface OrderService {
 
-    void createOrder(OrderInputDTO orderInputDTO);
+    OrderOutputDTO createOrder(OrderInputDTO orderInputDTO);
+
+    List<OrderOutputDTO> findAll();
 
 }
