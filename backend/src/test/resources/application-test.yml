@@ -1,0 +1,11 @@
+spring:
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    url:
+    username:
+    password:
+  liquibase:
+    default-schema: shop
+    change-log: classpath:liquibase/liquibase.changelog-master.xml
+    enabled: true
+    contexts: test
