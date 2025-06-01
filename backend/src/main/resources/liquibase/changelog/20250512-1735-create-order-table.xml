@@ -25,9 +25,6 @@
             <column name="id" type="bigint" remarks="Номер заказа">
                 <constraints primaryKey="true"/>
             </column>
-            <column name="total_price" type="numeric" remarks="Сумма заказа">
-                <constraints nullable="false"/>
-            </column>
             <column name="order_date_time" type="timestamp" remarks="Дата и время создания заказа">
                 <constraints nullable="false"/>
             </column>

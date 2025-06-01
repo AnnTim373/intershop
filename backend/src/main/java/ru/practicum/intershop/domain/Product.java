@@ -1,29 +1,28 @@
 package ru.practicum.intershop.domain;
 
-import jakarta.persistence.*;
 import lombok.Data;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Column;
+import org.springframework.data.relational.core.mapping.Table;
 
 @Data
-@Entity
 @Table(schema = "shop", name = "product")
-@SequenceGenerator(schema = "shop", sequenceName = "seq_product", name = "seq_product", allocationSize = 1)
 public class Product {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_product")
-    @Column(name = "id")
+    @Column(value = "id")
     private Long id;
 
-    @Column(name = "name")
+    @Column(value = "name")
     private String name;
 
-    @Column(name = "description")
+    @Column(value = "description")
     private String description;
 
-    @Column(name = "price")
+    @Column(value = "price")
     private Double price;
 
-    @Column(name = "image")
+    @Column(value = "image")
     private byte[] image;
 
 }

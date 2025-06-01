@@ -1,21 +1,18 @@
 package ru.practicum.intershop.service;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import reactor.core.publisher.Mono;
 import ru.practicum.intershop.domain.Product;
 import ru.practicum.intershop.dto.ProductInputDTO;
 import ru.practicum.intershop.dto.ProductOutputDTO;
-
-import java.util.Optional;
+import ru.practicum.intershop.util.Page;
+import ru.practicum.intershop.util.Pageable;
 
 public interface ProductService {
 
-    Page<ProductOutputDTO> findAll(Pageable pageable, String search);
+    Mono<Page<ProductOutputDTO>> findAll(Pageable pageable, String search);
 
-    ProductOutputDTO save(ProductInputDTO productInputDTO);
+    Mono<ProductOutputDTO> save(ProductInputDTO productInputDTO);
 
-    Optional<Product> findById(Long productId);
-
-    boolean existsById(Long productId);
+    Mono<Product> findById(Long productId);
 
 }
