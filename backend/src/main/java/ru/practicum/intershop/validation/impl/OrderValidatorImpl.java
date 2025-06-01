@@ -22,8 +22,8 @@ public class OrderValidatorImpl implements OrderValidator {
         checkItems(orderInputDTO.getItems());
     }
 
-    private void checkItems(List<OrderInputDTO.Item> items) {
-        items.forEach(item -> {
+    private void checkItems(List<OrderInputDTO.ContentDTO> contents) {
+        contents.forEach(item -> {
             checkItemProductId(item.getProductId());
             checkItemQuantity(item.getQuantity());
         });
@@ -31,7 +31,6 @@ public class OrderValidatorImpl implements OrderValidator {
 
     private void checkItemProductId(Long productId) {
         if (productId == null) throw new IntershopException("Товар должен быть указан");
-        if (!productService.existsById(productId)) throw new IntershopException("Товар не найден");
     }
 
     private void checkItemQuantity(Integer quantity) {

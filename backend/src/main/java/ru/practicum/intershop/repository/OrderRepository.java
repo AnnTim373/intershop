@@ -1,14 +1,13 @@
 package ru.practicum.intershop.repository;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.r2dbc.repository.Query;
+import org.springframework.data.r2dbc.repository.R2dbcRepository;
+import reactor.core.publisher.Flux;
 import ru.practicum.intershop.domain.Order;
 
-import java.util.List;
+public interface OrderRepository extends R2dbcRepository<Order, Integer> {
 
-public interface OrderRepository extends JpaRepository<Order, Integer> {
-
-    @Query(value = "select o from Order o order by o.orderDateTime desc")
-    List<Order> findAllOrderByOrderDateTimeDesc();
+    @Query(value = "select o.* from shop.order o order by o.order_date_time desc")
+    Flux<Order> findAllOrderByOrderDateTimeDesc();
 
 }

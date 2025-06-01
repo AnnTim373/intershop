@@ -16,8 +16,6 @@ public class OrderOutputDTO {
 
     private Long id;
 
-    private Double totalPrice;
-
     private LocalDateTime orderDate;
 
     private List<OrderContentOutputDTO> contents;

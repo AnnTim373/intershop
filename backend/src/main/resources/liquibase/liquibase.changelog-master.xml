@@ -2,5 +2,10 @@
 <databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
-    <includeAll path="changelog/" relativeToChangelogFile="true"/>
+    <include file="changelog/20250512-1733-create-product-table.xml" relativeToChangelogFile="true"/>
+    <include file="changelog/20250512-1735-create-order-table.xml" relativeToChangelogFile="true"/>
+    <include file="changelog/20250512-1736-create-order-content-table.xml" relativeToChangelogFile="true"/>
+    <include file="changelog/20250531-1203-add-product-default-id.xml" relativeToChangelogFile="true"/>
+    <include file="changelog/20250531-1208-add-order-default-id.xml" relativeToChangelogFile="true"/>
+    <include file="changelog/20250531-1210-add-order-content-default-id.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

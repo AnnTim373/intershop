@@ -1,10 +1,14 @@
 package ru.practicum.intershop.domain;
 
-import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
+import org.springframework.data.relational.core.mapping.Column;
+import org.springframework.data.relational.core.mapping.Table;
+import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -13,24 +17,17 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity
 @Table(schema = "shop", name = "order")
-@SequenceGenerator(schema = "shop", sequenceName = "seq_order", name = "seq_order", allocationSize = 1)
 public class Order {
 
     @Id
-    @Column(name = "id")
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_order")
+    @Column(value = "id")
     private Long id;
 
-    @Column(name = "total_price")
-    private Double totalPrice;
-
-    @Column(name = "order_date_time")
+    @Column(value = "order_date_time")
     private LocalDateTime orderDateTime;
 
-    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinColumn(name = "order_id", referencedColumnName = "id")
-    private List<OrderContent> contents;
+    @Transient
+    private Mono<List<OrderContent>> contents;
 
 }

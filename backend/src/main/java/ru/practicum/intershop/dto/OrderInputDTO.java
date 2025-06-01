@@ -9,12 +9,12 @@ import java.util.List;
 @Data
 public class OrderInputDTO {
 
-    private List<Item> items;
+    private List<ContentDTO> items;
 
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class Item {
+    public static class ContentDTO {
 
         private Long productId;
 

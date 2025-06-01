@@ -391,7 +391,10 @@ function closeOrdersModal() {
 async function fetchOrders() {
   try {
     const response = await axios.get('/api/orders')
-    orders.value = response.data
+    orders.value = response.data.map(order => ({
+      ...order,
+      totalPrice: order.contents.reduce((sum, item) => sum + item.price * item.quantity, 0)
+    }))
   } catch (error) {
     console.error('Ошибка при получении заказов:', error)
     showErrorPopup('Не удалось загрузить заказы.')

@@ -1,13 +1,18 @@
 spring:
   liquibase:
+    url: jdbc:postgresql://host.docker.internal:54332/intershop
+    user: postgres
+    password: postgres
     default-schema: shop
     change-log: classpath:liquibase/liquibase.changelog-master.xml
+    driver-class-name: org.postgresql.Driver
   application.name: intershop
-  datasource:
-    type: com.zaxxer.hikari.HikariDataSource
-    url: jdbc:postgresql://host.docker.internal:54332/intershop
+  r2dbc:
+    url: r2dbc:postgresql://host.docker.internal:54332/intershop
     username: postgres
     password: postgres
+    pool:
+      enabled: true
   jpa:
     properties.hibernate.generate_statistics: false
     hibernate:

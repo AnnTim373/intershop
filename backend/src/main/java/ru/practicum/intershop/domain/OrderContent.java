@@ -1,37 +1,42 @@
 package ru.practicum.intershop.domain;
 
-import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
+import org.springframework.data.relational.core.mapping.Column;
+import org.springframework.data.relational.core.mapping.Table;
+import reactor.core.publisher.Mono;
 
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity
 @Table(schema = "shop", name = "order_content")
-@SequenceGenerator(schema = "shop", sequenceName = "seq_order_content", name = "seq_order_content", allocationSize = 1)
 public class OrderContent {
 
     @Id
-    @Column(name = "id")
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_order_content")
+    @Column(value = "id")
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "product_id", referencedColumnName = "id")
-    private Product product;
+    @Column(value = "product_id")
+    private Long productId;
 
-    @ManyToOne
-    @JoinColumn(name = "order_id", referencedColumnName = "id")
-    private Order order;
+    @Column(value = "order_id")
+    private Long orderId;
 
-    @Column(name = "quantity")
+    @Column(value = "quantity")
     private Integer quantity;
 
-    @Column(name = "product_price_from_order")
+    @Column(value = "product_price_from_order")
     private Double productPriceFromOrder;
+
+    @Transient
+    private Mono<Product> product;
+
+    @Transient
+    private Mono<Order> order;
 
 }

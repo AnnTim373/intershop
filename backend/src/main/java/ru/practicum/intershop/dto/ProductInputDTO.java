@@ -3,6 +3,7 @@ package ru.practicum.intershop.dto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.web.multipart.MultipartFile;
 
 @Data
@@ -16,6 +17,6 @@ public class ProductInputDTO {
 
     private Double price;
 
-    private MultipartFile image;
+    private FilePart image;
 
 }

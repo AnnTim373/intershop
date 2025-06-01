@@ -1,14 +1,15 @@
 package ru.practicum.intershop.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.reactive.server.WebTestClient;
+import reactor.core.publisher.Mono;
 import ru.practicum.intershop.AbstractTestContainer;
 import ru.practicum.intershop.TestContext;
 import ru.practicum.intershop.domain.Product;
@@ -17,63 +18,56 @@ import ru.practicum.intershop.repository.ProductRepository;
 
 import java.util.List;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-
 @SpringBootTest
 @Import(TestContext.class)
-@AutoConfigureMockMvc
+@AutoConfigureWebTestClient
 @ActiveProfiles("test")
 class OrderControllerIntegrationTest extends AbstractTestContainer {
 
     @Autowired
-    private MockMvc mockMvc;
-
-    @Autowired
-    private ObjectMapper objectMapper;
+    private WebTestClient webTestClient;
 
     @Autowired
     private ProductRepository productRepository;
 
-    private final Product product = new Product();
+    private Product product;
+
+    @BeforeEach
+    void setup() {
+        product = new Product();
+        product.setName("Test Product");
+        product.setPrice(100.0);
+        product = productRepository.save(product).block();
+    }
 
     @Test
-    void shouldSaveOrder() throws Exception {
+    void shouldSaveOrder() {
         OrderInputDTO order = getOrder();
-        mockMvc.perform(post("/api/orders")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(order)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").isNotEmpty())
-                .andExpect(jsonPath("$.orderDate").isNotEmpty())
-                .andExpect(jsonPath("$.totalPrice").value(400.0));
+
+        webTestClient.post()
+                .uri("/api/orders")
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(Mono.just(order), OrderInputDTO.class)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.id").isNotEmpty()
+                .jsonPath("$.orderDate").isNotEmpty();
     }
 
     @Test
-    void shouldReturnAllOrders() throws Exception {
-        mockMvc.perform(get("/api/orders"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.size()").value(1))
-                .andExpect(jsonPath("$[0].totalPrice").isNotEmpty());
+    void shouldReturnAllOrders() {
+        webTestClient.get()
+                .uri("/api/orders")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.size()").isEqualTo(1);
     }
-
 
     private OrderInputDTO getOrder() {
         OrderInputDTO order = new OrderInputDTO();
-        if (productRepository.findAll().isEmpty()) {
-            product.setName("Test Product");
-            product.setPrice(100.0);
-            Product saved = productRepository.save(product);
-            order.setItems(List.of(
-                    new OrderInputDTO.Item(saved.getId(), 4)
-            ));
-        } else order.setItems(List.of(
-                new OrderInputDTO.Item(productRepository.findById(1L).orElse(new Product()).getId(), 4)
-        ));
-
+        order.setItems(List.of(new OrderInputDTO.ContentDTO(product.getId(), 4)));
         return order;
     }
 
