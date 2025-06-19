@@ -163,10 +163,10 @@
             </button>
           </li>
         </ul>
-
+        <p>Баланс: {{ balance }}</p>
         <p><strong>Итого: {{ totalPrice }} ₽</strong></p>
 
-        <button class="checkout-btn" @click="checkout">Оформить заказ</button>
+        <button :disabled="!canPlaceOrder" class="checkout-btn { disabled: !canPlaceOrder }" @click="checkout">Оформить заказ</button>
       </div>
 
       <button class="close-btn" @click="closeCartModal">Закрыть</button>
@@ -205,7 +205,7 @@
 </template>
 
 <script setup>
-import {computed, reactive, ref, watch} from 'vue'
+import {computed, reactive, ref, watch, onMounted} from 'vue'
 import axios from 'axios'
 import debounce from 'lodash.debounce'
 
@@ -269,6 +269,7 @@ async function checkout() {
     }))
 
     const response = await axios.post('/api/orders', {
+      accountId: 1,
       items: orderItems
     })
 
@@ -281,6 +282,7 @@ async function checkout() {
     showErrorPopup('Ошибка при оформлении заказа.')
     console.error('Ошибка оформления заказа:', error)
   }
+  await setBalance();
 }
 
 function openAddProductModal() {
@@ -321,6 +323,7 @@ async function submitNewProduct() {
   }
 }
 
+const balance = ref(0);
 
 async function fetchProducts() {
   try {
@@ -340,6 +343,12 @@ async function fetchProducts() {
   }
 }
 
+onMounted(async () => {
+  await setBalance();
+});
+
+const canPlaceOrder = computed(() => balance.value >= totalPrice.value);
+
 function showErrorPopup(message) {
   errorMessage.value = message
 
@@ -348,6 +357,11 @@ function showErrorPopup(message) {
   setTimeout(() => {
     showError.value = false
   }, 5000)
+}
+
+async function setBalance() {
+  const response = await axios.get('/api/account/1/balance');
+  balance.value = response.data.balance;
 }
 
 function openProductModal(product) {
@@ -656,6 +670,13 @@ fetchProducts()
   border-radius: 6px;
   cursor: pointer;
   font-size: 16px;
+}
+
+.checkout-btn:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+  color: #666666;
+  pointer-events: none;
 }
 
 .order-cart-wrapper {

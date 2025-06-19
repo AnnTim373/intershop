@@ -16,6 +16,7 @@ import ru.practicum.intershop.dto.ProductInputDTO;
 import ru.practicum.intershop.repository.OrderContentRepository;
 import ru.practicum.intershop.repository.ProductRepository;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 
@@ -104,7 +105,7 @@ class ProductControllerIntegrationTest extends AbstractTestContainer {
         Product p = new Product();
         p.setName(input.getName());
         p.setDescription(input.getDescription());
-        p.setPrice(input.getPrice());
+        p.setPrice(BigDecimal.valueOf(input.getPrice()));
         return p;
     }
 

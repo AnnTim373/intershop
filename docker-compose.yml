@@ -1,0 +1,53 @@
+services:
+  intershop-build:
+    build:
+      context: .
+    working_dir: /intershop
+    command: sh -c "cp /intershop/backend/target/intershop.jar /intershop/jars/backend && cp /intershop/payment/target/payment.jar /intershop/jars/payment"
+    volumes:
+      - ./jars/backend:/intershop/jars/backend
+      - ./jars/payment:/intershop/jars/payment
+
+  redis:
+    image: redis:7.2
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./redis_data:/data
+    restart: always
+    networks:
+      - intershop_net
+
+  intershop-backend:
+    image: openjdk:21
+    restart:
+      always
+    volumes:
+      - ./jars/backend:/intershop
+    depends_on:
+      - intershop-build
+      - redis
+    command: [ "java", "-jar", "/intershop/intershop.jar" ]
+    ports:
+      - "8040:8040"
+    networks:
+      - intershop_net
+
+  intershop-payment:
+    image: openjdk:21
+    restart:
+      always
+    volumes:
+      - ./jars/payment:/intershop
+    depends_on:
+      - intershop-build
+    command: [ "java", "-jar", "/intershop/payment.jar" ]
+    ports:
+      - "8041:8041"
+    networks:
+      - intershop_net
+
+networks:
+  intershop_net:
+    driver: bridge

@@ -9,6 +9,7 @@ import ru.practicum.intershop.dto.ProductInputDTO;
 import ru.practicum.intershop.dto.ProductOutputDTO;
 import ru.practicum.intershop.mapper.ProductMapper;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
@@ -41,7 +42,7 @@ public class ProductMapperImpl implements ProductMapper {
         productOutputDTO.setId(product.getId());
         productOutputDTO.setName(product.getName());
         productOutputDTO.setDescription(product.getDescription());
-        productOutputDTO.setPrice(product.getPrice());
+        productOutputDTO.setPrice(product.getPrice().doubleValue());
         productOutputDTO.setImage(toStringFromProductImage(product.getImage()));
 
         return productOutputDTO;
@@ -59,7 +60,7 @@ public class ProductMapperImpl implements ProductMapper {
                     Product product = new Product();
                     product.setName(productInputDTO.getName());
                     product.setDescription(productInputDTO.getDescription());
-                    product.setPrice(productInputDTO.getPrice());
+                    product.setPrice(BigDecimal.valueOf(productInputDTO.getPrice()));
                     product.setImage(image);
                     return product;
                 });

@@ -38,13 +38,13 @@ public class OrderContentServiceImpl implements OrderContentService {
     @Override
     public Mono<List<OrderContent>> save(Long orderId, List<OrderInputDTO.ContentDTO> contentDTOList) {
         return orderContentMapper.fromDTO(orderId, contentDTOList).flatMap(
-                orderContents -> orderContentRepository.saveAll(orderContents)
-                        .map(orderContent -> {
-                            orderContent.setProduct(productService.findById(orderContent.getProductId()));
-                            return orderContent;
-                        })
-                        .collectList()
-        );
+                orderContents -> {
+                    List<OrderContent> contentList = orderContents.stream()
+                            .peek(orderContent ->
+                                    orderContent.setProduct(productService.findById(orderContent.getProductId())))
+                            .toList();
+                    return orderContentRepository.saveAll(contentList).collectList();
+                });
     }
 
 }
