@@ -5,9 +5,12 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
+import java.io.Serializable;
+import java.math.BigDecimal;
+
 @Data
 @Table(schema = "shop", name = "product")
-public class Product {
+public class Product implements Serializable {
 
     @Id
     @Column(value = "id")
@@ -20,7 +23,7 @@ public class Product {
     private String description;
 
     @Column(value = "price")
-    private Double price;
+    private BigDecimal price;
 
     @Column(value = "image")
     private byte[] image;

@@ -48,7 +48,7 @@ public class OrderContentMapperImpl implements OrderContentMapper {
     private Mono<OrderOutputDTO.OrderContentOutputDTO> toDTO(OrderContent content) {
         return content.getProduct().map(product -> OrderOutputDTO.OrderContentOutputDTO.builder()
                 .productName(product.getName())
-                .price(content.getProductPriceFromOrder())
+                .price(content.getProductPriceFromOrder().doubleValue())
                 .quantity(content.getQuantity())
                 .build());
     }

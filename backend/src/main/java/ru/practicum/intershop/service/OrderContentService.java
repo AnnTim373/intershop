@@ -10,5 +10,6 @@ public interface OrderContentService {
 
     Mono<List<OrderContent>> findAllByOrderId(Long orderId);
 
-    Mono<List<OrderContent>> save(Long orderid, List<OrderInputDTO.ContentDTO> contentDTOList);
+    Mono<List<OrderContent>> save(Long orderId, List<OrderInputDTO.ContentDTO> contentDTOList);
+
 }

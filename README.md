@@ -28,10 +28,12 @@
 - Java 21
 - Maven
 - Docker
+- Docker-compose
 - Spring Boot
 - Postgres
 - Hibernate
 - Vue
+- Redis
 
 ## Сборка и запуск
 
@@ -42,11 +44,11 @@
    mvnw clean verify
    ```
    отдельно от запуска приложения
-3. В корневой папке проекта создать docker-образ приложения командой
+3. Выполнить сборку проекта командой
     ```
-    docker build -t intershop .
+    docker-compose build
+   ```
+4. Выполнить запуск приложений командой
     ```
-4. Запустить контейнер командой 
-    ```
-   docker run -d -p 8040:8040 --name intershop intershop
+   docker-compose up -d
    ```

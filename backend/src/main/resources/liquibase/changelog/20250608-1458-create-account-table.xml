@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+
+    <changeSet id="1" author="Anna Timofeeva">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists schemaName="shop" tableName="account"/>
+            </not>
+        </preConditions>
+        <createSequence sequenceName="seq_account_id" schemaName="shop"/>
+        <createTable schemaName="shop" tableName="account" remarks="Данные о счёте">
+            <column name="id" type="bigint" remarks="Идентификатор счета"
+                    defaultValueComputed="nextval('shop.seq_account_id')">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="balance" type="numeric" remarks="Баланс счета"/>
+        </createTable>
+        <sql>
+            alter table shop.account
+                add constraint chk_account_positive_balance CHECK (balance >= 0);
+        </sql>
+    </changeSet>
+
+    <changeSet id="2" author="Anna Timofeeva">
+        <preConditions onFail="MARK_RAN">
+            <tableExists schemaName="shop" tableName="account"/>
+        </preConditions>
+        <sql>
+            insert into shop.account(balance)
+            values (1234567.0)
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

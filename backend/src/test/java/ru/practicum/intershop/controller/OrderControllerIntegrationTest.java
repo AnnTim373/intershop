@@ -16,6 +16,7 @@ import ru.practicum.intershop.domain.Product;
 import ru.practicum.intershop.dto.OrderInputDTO;
 import ru.practicum.intershop.repository.ProductRepository;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @SpringBootTest
@@ -36,7 +37,7 @@ class OrderControllerIntegrationTest extends AbstractTestContainer {
     void setup() {
         product = new Product();
         product.setName("Test Product");
-        product.setPrice(100.0);
+        product.setPrice(BigDecimal.valueOf(100.0));
         product = productRepository.save(product).block();
     }
 

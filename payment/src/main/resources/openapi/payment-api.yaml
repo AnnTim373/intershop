@@ -1,0 +1,90 @@
+openapi: 3.0.3
+info:
+  title: Payment API
+  version: 1.0.0
+  description: |
+    API для управления платежами: получение баланса и обработка оплаты по заказу.
+
+servers:
+  - url: http://localhost:8080
+
+tags:
+  - name: Payment
+    description: Операции, связанные с платежами
+  - name: Account
+    description: Операции, связанные с счетами
+
+paths:
+  /api/account/{accountId}/balance:
+    get:
+      tags: [ Account ]
+      summary: Получить баланс
+      description: Возвращает баланс текущего активного счета.
+      operationId: getBalance
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          description: Идентификатор счета
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Баланс
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BalanceOutputDTO'
+
+  /api/payment:
+    post:
+      tags:
+        - Payment
+      summary: Обработать оплату заказа
+      description: Обрабатывает платеж по переданным данным.
+      operationId: processPayment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentInputDTO'
+      responses:
+        '200':
+          description: Платеж успешно обработан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentOutputDTO'
+
+components:
+  schemas:
+    BalanceOutputDTO:
+      type: object
+      description: Результат запроса текущего баланса
+      properties:
+        balance:
+          type: number
+          format: double
+          description: Значение текущего баланса
+    PaymentOutputDTO:
+      type: object
+      description: Результат платежной операции
+      properties:
+        status:
+          type: boolean
+          description: Статус платежа
+    PaymentInputDTO:
+      type: object
+      description: Результат платежной операции
+      properties:
+        orderId:
+          type: integer
+          format: int64
+          description: Идентификатор заказа
+        accountId:
+          type: integer
+          format: int64
+          description: Идентификатор счета
+

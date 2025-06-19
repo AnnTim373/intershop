@@ -1,14 +1,12 @@
-package ru.practicum.intershop.domain;
+package ru.practicum.payment.domain;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.Transient;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
-import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
 
@@ -23,9 +21,6 @@ public class OrderContent {
     @Column(value = "id")
     private Long id;
 
-    @Column(value = "product_id")
-    private Long productId;
-
     @Column(value = "order_id")
     private Long orderId;
 
@@ -34,11 +29,5 @@ public class OrderContent {
 
     @Column(value = "product_price_from_order")
     private BigDecimal productPriceFromOrder;
-
-    @Transient
-    private Mono<Product> product;
-
-    @Transient
-    private Mono<Order> order;
 
 }

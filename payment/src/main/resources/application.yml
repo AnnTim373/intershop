@@ -1,0 +1,15 @@
+spring:
+  application.name: payment
+  r2dbc:
+    url: r2dbc:postgresql://host.docker.internal:54332/intershop
+    username: postgres
+    password: postgres
+    pool:
+      enabled: true
+  jpa:
+    properties.hibernate.generate_statistics: false
+    hibernate:
+      ddl-auto: none
+server:
+  port: 8041
+
