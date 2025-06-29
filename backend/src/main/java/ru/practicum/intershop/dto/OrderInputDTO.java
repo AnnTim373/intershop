@@ -9,8 +9,6 @@ import java.util.List;
 @Data
 public class OrderInputDTO {
 
-    private Long accountId;
-
     private List<ContentDTO> items;
 
     @Data

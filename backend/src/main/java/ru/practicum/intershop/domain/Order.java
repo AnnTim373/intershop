@@ -27,6 +27,9 @@ public class Order {
     @Column(value = "order_date_time")
     private LocalDateTime orderDateTime;
 
+    @Column(value = "user_id")
+    private Long userId;
+
     @Transient
     private Mono<List<OrderContent>> contents;
 

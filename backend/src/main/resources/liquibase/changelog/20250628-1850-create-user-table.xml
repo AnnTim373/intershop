@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+
+    <changeSet id="1" author="Anna Timofeeva">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists schemaName="shop" tableName="user"/>
+            </not>
+        </preConditions>
+        <createSequence sequenceName="seq_user_id" schemaName="shop"/>
+        <createTable schemaName="shop" tableName="user" remarks="Данные учетных записей пользователей">
+            <column name="id" type="bigint" remarks="Идентификатор учетной записи"
+                    defaultValueComputed="nextval('shop.seq_user_id')">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="username" type="varchar" remarks="Логин">
+                <constraints unique="true" nullable="false"/>
+            </column>
+            <column name="password" type="varchar" remarks="Пароль">
+                <constraints nullable="false"/>
+            </column>
+            <column name="full_name" type="varchar" remarks="ФИО">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+</databaseChangeLog>

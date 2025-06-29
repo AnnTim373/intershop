@@ -1,4 +1,9 @@
 spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://keycloak:8043/realms/shop-realm
   application.name: payment
   r2dbc:
     url: r2dbc:postgresql://host.docker.internal:54332/intershop

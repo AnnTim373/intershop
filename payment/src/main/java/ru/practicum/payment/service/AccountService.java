@@ -6,9 +6,9 @@ import ru.practicum.payment.dto.BalanceOutputDTO;
 
 public interface AccountService {
 
-    Mono<BalanceOutputDTO> getCurrentBalance(Long accountId);
+    Mono<BalanceOutputDTO> getCurrentBalance(Long userId);
 
-    Mono<Account> findAccountById(Long accountId);
+    Mono<Account> findAccountByUserId(Long userId);
 
     void save(Account account);
 

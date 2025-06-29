@@ -7,7 +7,7 @@ import ru.practicum.intershop.dto.OrderOutputDTO;
 
 public interface OrderMapper {
 
-    Order fromDTO(OrderInputDTO orderInputDTO);
+    Order fromDTO(OrderInputDTO orderInputDTO, Long userId);
 
     Mono<OrderOutputDTO> toDTO(Order order);
 

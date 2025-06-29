@@ -25,7 +25,7 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public Mono<PaymentOutputDTO> processPayment(Mono<PaymentInputDTO> dtoMono) {
         return dtoMono.flatMap(dto ->
-                accountService.findAccountById(dto.getAccountId()).flatMap(account -> {
+                accountService.findAccountByUserId(dto.getUserId()).flatMap(account -> {
                     Mono<BigDecimal> totalPriceMono = orderContentService.getOrderContents(dto.getOrderId())
                             .map(orderContent -> orderContent.getProductPriceFromOrder()
                                     .multiply(BigDecimal.valueOf(orderContent.getQuantity())))
@@ -34,13 +34,13 @@ public class PaymentServiceImpl implements PaymentService {
                         BigDecimal currentBalance = account.getBalance();
                         if (totalPrice.compareTo(currentBalance) <= 0) {
                             account.setBalance(account.getBalance().subtract(totalPrice));
-                            return saveSucceededPayment(dto, totalPrice)
+                            return saveSucceededPayment(dto, totalPrice, account.getId())
                                     .map(payment -> {
                                         accountService.save(account);
                                         return new PaymentOutputDTO().status(true);
                                     });
                         } else {
-                            return saveFailedPayment(dto, totalPrice)
+                            return saveFailedPayment(dto, totalPrice, account.getId())
                                     .thenReturn(new PaymentOutputDTO().status(false));
                         }
                     });
@@ -48,22 +48,22 @@ public class PaymentServiceImpl implements PaymentService {
                 }));
     }
 
-    private Mono<Payment> saveSucceededPayment(PaymentInputDTO dto, BigDecimal totalPrice) {
+    private Mono<Payment> saveSucceededPayment(PaymentInputDTO dto, BigDecimal totalPrice, Long accountId) {
         return paymentRepository.save(Payment.builder()
                 .status(Payment.PaymentStatus.SUCCESS)
                 .paymentTimestamp(LocalDateTime.now())
                 .orderId(dto.getOrderId())
-                .accountId(dto.getAccountId())
+                .accountId(accountId)
                 .totalAmount(totalPrice)
                 .build());
     }
 
-    private Mono<Payment> saveFailedPayment(PaymentInputDTO dto, BigDecimal totalPrice) {
+    private Mono<Payment> saveFailedPayment(PaymentInputDTO dto, BigDecimal totalPrice, Long accountId) {
         return paymentRepository.save(Payment.builder()
                 .status(Payment.PaymentStatus.ERROR)
                 .paymentTimestamp(LocalDateTime.now())
                 .orderId(dto.getOrderId())
-                .accountId(dto.getAccountId())
+                .accountId(accountId)
                 .totalAmount(totalPrice)
                 .build());
     }
