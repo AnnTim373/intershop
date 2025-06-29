@@ -16,8 +16,8 @@ public class AccountController implements AccountApi {
     private final AccountService accountService;
 
     @Override
-    public Mono<ResponseEntity<BalanceOutputDTO>> getBalance(@PathVariable(name = "accountId") Long accountId, ServerWebExchange exchange) {
-        return accountService.getCurrentBalance(accountId).map(ResponseEntity::ok);
+    public Mono<ResponseEntity<BalanceOutputDTO>> getBalance(@PathVariable(name = "userId") Long userId, ServerWebExchange exchange) {
+        return accountService.getCurrentBalance(userId).map(ResponseEntity::ok);
     }
 
 }

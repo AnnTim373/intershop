@@ -15,17 +15,17 @@ tags:
     description: Операции, связанные с счетами
 
 paths:
-  /api/account/{accountId}/balance:
+  /api/account/{userId}/balance:
     get:
       tags: [ Account ]
       summary: Получить баланс
       description: Возвращает баланс текущего активного счета.
       operationId: getBalance
       parameters:
-        - name: accountId
+        - name: userId
           in: path
           required: true
-          description: Идентификатор счета
+          description: Идентификатор УЗ
           schema:
             type: integer
             format: int64
@@ -83,7 +83,7 @@ components:
           type: integer
           format: int64
           description: Идентификатор заказа
-        accountId:
+        userId:
           type: integer
           format: int64
           description: Идентификатор счета

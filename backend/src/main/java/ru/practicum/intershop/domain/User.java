@@ -1,4 +1,4 @@
-package ru.practicum.payment.domain;
+package ru.practicum.intershop.domain;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -8,23 +8,24 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
-import java.math.BigDecimal;
-
 @Data
+@Table(schema = "shop", name = "user")
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(schema = "shop", name = "account")
-public class Account {
+public class User {
 
     @Id
-    @Column(value = "id")
+    @Column("id")
     private Long id;
 
-    @Column(value = "balance")
-    private BigDecimal balance;
+    @Column("username")
+    private String username;
 
-    @Column(value = "user_id")
-    private Long userId;
+    @Column("password")
+    private String password;
+
+    @Column("full_name")
+    private String fullname;
 
 }

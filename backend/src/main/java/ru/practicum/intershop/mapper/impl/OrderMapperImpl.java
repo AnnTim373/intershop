@@ -18,8 +18,9 @@ public class OrderMapperImpl implements OrderMapper {
     private final OrderContentMapper orderContentMapper;
 
     @Override
-    public Order fromDTO(OrderInputDTO orderInputDTO) {
+    public Order fromDTO(OrderInputDTO orderInputDTO, Long userId) {
         return Order.builder()
+                .userId(userId)
                 .orderDateTime(LocalDateTime.now())
                 .build();
     }

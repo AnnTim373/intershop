@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+
+    <changeSet id="1" author="Anna Timofeeva">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists schemaName="shop" tableName="order" columnName="user_id"/>
+            </not>
+        </preConditions>
+        <addColumn schemaName="shop" tableName="order">
+            <column name="user_id" type="bigint" remarks="Идентификатор УЗ"/>
+        </addColumn>
+        <addForeignKeyConstraint baseTableSchemaName="shop"
+                                 baseTableName="order"
+                                 baseColumnNames="user_id"
+                                 constraintName="fk_order_user_id"
+                                 referencedTableSchemaName="shop"
+                                 referencedTableName="user"
+                                 referencedColumnNames="id"/>
+    </changeSet>
+
+</databaseChangeLog>

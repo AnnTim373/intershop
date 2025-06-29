@@ -13,10 +13,10 @@
     </div>
 
     <div class="top-actions">
-      <button class="add-product-btn" @click="openAddProductModal">
+      <button v-if="isAuthenticated" class="add-product-btn" @click="openAddProductModal">
         ➕ Добавить товар
       </button>
-      <div class="order-cart-wrapper">
+      <div v-if="isAuthenticated" class="order-cart-wrapper">
         <button class="orders-btn" @click="openOrdersModal">
           📦 Заказы
         </button>
@@ -24,7 +24,12 @@
           🛒 Корзина ({{ cartItemCount }})
         </button>
       </div>
-
+      <button v-if="!isAuthenticated" class="cart-btn" @click="openLoginModal">
+        Войти
+      </button>
+      <button v-if="isAuthenticated" class="cart-btn" @click="logout">
+        Выйти
+      </button>
     </div>
 
     <div class="controls">
@@ -86,7 +91,7 @@
             Удалить из корзины
           </button>
         </div>
-        <div v-else>
+        <div v-else-if="isAuthenticated">
           <button class="add-btn" @click.stop="addToCart(product.id)">
             Добавить в корзину
           </button>
@@ -121,7 +126,7 @@
           Удалить из корзины
         </button>
       </div>
-      <div v-else>
+      <div v-else-if="isAuthenticated">
         <button class="add-btn" @click.stop="addToCart(selectedProduct.id)">
           Добавить в корзину
         </button>
@@ -166,7 +171,9 @@
         <p>Баланс: {{ balance }}</p>
         <p><strong>Итого: {{ totalPrice }} ₽</strong></p>
 
-        <button :disabled="!canPlaceOrder" class="checkout-btn { disabled: !canPlaceOrder }" @click="checkout">Оформить заказ</button>
+        <button :disabled="!canPlaceOrder" class="checkout-btn { disabled: !canPlaceOrder }" @click="checkout">Оформить
+          заказ
+        </button>
       </div>
 
       <button class="close-btn" @click="closeCartModal">Закрыть</button>
@@ -202,10 +209,30 @@
       <button class="close-btn" @click="closeOrderDetailsModal">Закрыть</button>
     </div>
   </div>
+  <div v-if="showLoginModal" class="modal-overlay" @click.self="closeLoginModal">
+    <div class="modal">
+      <h2>Авторизация</h2>
+      <input v-model="loginForm.username" placeholder="Имя пользователя"/>
+      <input v-model="loginForm.password" type="password" placeholder="Пароль"/>
+      <div>
+        <button class="add-btn" @click="login">Войти</button>
+        <button class="add-btn" @click="openSignUpModal">Зарегистрироваться</button>
+      </div>
+    </div>
+  </div>
+  <div v-if="showSignUpModal" class="modal-overlay" @click.self="closeSignUpModal">
+    <div class="modal">
+      <h2>Регистрация</h2>
+      <input v-model="signUpForm.username" placeholder="Имя пользователя"/>
+      <input v-model="signUpForm.password" type="password" placeholder="Пароль"/>
+      <input v-model="signUpForm.fullName" placeholder="ФИО"/>
+      <button class="add-btn" @click="signUp">Зарегистрироваться</button>
+    </div>
+  </div>
 </template>
 
 <script setup>
-import {computed, reactive, ref, watch, onMounted} from 'vue'
+import {computed, onMounted, reactive, ref, watch} from 'vue'
 import axios from 'axios'
 import debounce from 'lodash.debounce'
 
@@ -269,7 +296,6 @@ async function checkout() {
     }))
 
     const response = await axios.post('/api/orders', {
-      accountId: 1,
       items: orderItems
     })
 
@@ -343,10 +369,6 @@ async function fetchProducts() {
   }
 }
 
-onMounted(async () => {
-  await setBalance();
-});
-
 const canPlaceOrder = computed(() => balance.value >= totalPrice.value);
 
 function showErrorPopup(message) {
@@ -360,7 +382,7 @@ function showErrorPopup(message) {
 }
 
 async function setBalance() {
-  const response = await axios.get('/api/account/1/balance');
+  const response = await axios.get('/api/account/balance');
   balance.value = response.data.balance;
 }
 
@@ -432,6 +454,92 @@ function closeOrderDetailsModal() {
   selectedOrder.value = null
   showOrderDetailsModal.value = false
 }
+
+const isAuthenticated = ref(false)
+const showLoginModal = ref(false)
+const showSignUpModal = ref(false)
+
+const loginForm = reactive({
+  username: '',
+  password: ''
+})
+
+const signUpForm = reactive({
+  username: '',
+  password: '',
+  fullName: ''
+})
+
+function openLoginModal() {
+  showLoginModal.value = true
+}
+
+function closeLoginModal() {
+  showLoginModal.value = false
+}
+
+function openSignUpModal() {
+  showLoginModal.value = false
+  showSignUpModal.value = true
+}
+
+function closeSignUpModal() {
+  showSignUpModal.value = false
+}
+
+async function login() {
+  try {
+    await axios.post('/api/login', {
+      username: loginForm.username,
+      password: loginForm.password
+    })
+    closeLoginModal()
+    await checkSession()
+  } catch (error) {
+    console.error('Ошибка при авторизации:', error)
+    showErrorPopup('Ошибка авторизации')
+  }
+}
+
+async function signUp() {
+  try {
+    await axios.post('/api/sign-up', {
+      username: signUpForm.username,
+      password: signUpForm.password,
+      fullName: signUpForm.fullName
+    })
+    closeSignUpModal()
+  } catch (error) {
+    console.error('Ошибка при регистрации:', error)
+    showErrorPopup('Ошибка регистрации')
+  }
+}
+
+async function logout() {
+  try {
+    await axios.get('/api/logout')
+  } catch (error) {
+    console.error('Ошибка при logout:', error)
+    showErrorPopup('Ошибка выходе из аккаунта')
+  }
+}
+
+async function checkSession() {
+  try {
+    const response = await axios.get('/api/account/me', {withCredentials: true})
+    if (response.data.role === "USER") {
+      isAuthenticated.value = true
+      await setBalance()
+      return
+    }
+    isAuthenticated.value = false
+  } catch {
+    isAuthenticated.value = false
+  }
+}
+
+onMounted(checkSession)
+
 
 watch(cart, (newCart) => {
   localStorage.setItem('cart', JSON.stringify(newCart))

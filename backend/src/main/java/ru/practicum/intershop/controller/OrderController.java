@@ -1,6 +1,8 @@
 package ru.practicum.intershop.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 import ru.practicum.intershop.dto.OrderInputDTO;
@@ -20,14 +22,15 @@ public class OrderController {
     private final OrderValidator orderValidator;
 
     @GetMapping
-    public Mono<List<OrderOutputDTO>> getOrders() {
-        return orderService.findAll();
+    public Mono<List<OrderOutputDTO>> getOrders(@AuthenticationPrincipal User user) {
+        return orderService.findAll(user);
     }
 
     @PostMapping
-    public Mono<OrderOutputDTO> saveOrder(@RequestBody OrderInputDTO orderInputDTO) {
+    public Mono<OrderOutputDTO> saveOrder(@AuthenticationPrincipal User user,
+                                          @RequestBody OrderInputDTO orderInputDTO) {
         orderValidator.validate(orderInputDTO);
-        return orderService.createOrder(orderInputDTO);
+        return orderService.createOrder(orderInputDTO, user);
     }
 
 }

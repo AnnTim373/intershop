@@ -51,20 +51,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/OrderOutputDTO'
 
-  /api/account/balance/{}:
+  /api/account/balance:
     get:
       tags: [ Account ]
       summary: Получить баланс
       description: Возвращает баланс текущего активного счета.
       operationId: getBalance
-      parameters:
-        - name: accountId
-          in: path
-          required: true
-          description: Идентификатор счета
-          schema:
-            type: integer
-            format: int64
       responses:
         '200':
           description: Баланс

@@ -1,4 +1,15 @@
 spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          keycloak:
+            client-id: intershop
+            client-secret: 5X2RI3Fc5AsjRAi8Si7ZjPfwWymDJPpA
+            authorization-grant-type: client_credentials
+        provider:
+          keycloak:
+            token-uri: http://keycloak:8043/realms/shop-realm/protocol/openid-connect/token
   cache:
     type: redis
   liquibase:

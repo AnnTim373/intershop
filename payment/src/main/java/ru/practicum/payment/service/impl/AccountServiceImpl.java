@@ -8,6 +8,8 @@ import ru.practicum.payment.dto.BalanceOutputDTO;
 import ru.practicum.payment.repository.AccountRepository;
 import ru.practicum.payment.service.AccountService;
 
+import java.math.BigDecimal;
+
 @Service
 @RequiredArgsConstructor
 public class AccountServiceImpl implements AccountService {
@@ -15,14 +17,21 @@ public class AccountServiceImpl implements AccountService {
     private final AccountRepository accountRepository;
 
     @Override
-    public Mono<BalanceOutputDTO> getCurrentBalance(Long accountId) {
-        return accountRepository.findById(accountId)
-                .map(account -> new BalanceOutputDTO().balance(account.getBalance().doubleValue()));
+    public Mono<BalanceOutputDTO> getCurrentBalance(Long userId) {
+        return accountRepository.findByUserId(userId)
+                .map(account -> new BalanceOutputDTO().balance(account.getBalance().doubleValue()))
+                .switchIfEmpty(accountRepository.save(
+                                Account.builder()
+                                        .userId(userId)
+                                        .balance(BigDecimal.ZERO)
+                                        .build())
+                        .map(account -> new BalanceOutputDTO().balance(account.getBalance().doubleValue()))
+                );
     }
 
     @Override
-    public Mono<Account> findAccountById(Long accountId) {
-        return accountRepository.findById(accountId);
+    public Mono<Account> findAccountByUserId(Long userId) {
+        return accountRepository.findByUserId(userId);
     }
 
     @Override
